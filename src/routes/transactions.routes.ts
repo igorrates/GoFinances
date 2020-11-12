@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Router } from 'express';
 import { getCustomRepository } from 'typeorm';
 import multer from 'multer';
@@ -8,6 +9,7 @@ import DeleteTransactionService from '../services/DeleteTransactionService';
 import ImportTransactionsService from '../services/ImportTransactionsService';
 
 import uploadConfig from '../config/upload';
+
 const upload = multer(uploadConfig);
 
 const transactionsRouter = Router();
@@ -18,11 +20,11 @@ transactionsRouter.get('/', async (request, response) => {
   const transactions = await transactionsRepository.find();
   const balance = await transactionsRepository.getBalance();
 
-  return response.json({transactions, balance});
+  return response.json({ transactions, balance });
 });
 
 transactionsRouter.post('/', async (request, response) => {
-  const {title, value, type, category} = request.body;
+  const { title, value, type, category } = request.body;
 
   const createTransaction = new CreateTransactionService();
 
@@ -30,11 +32,10 @@ transactionsRouter.post('/', async (request, response) => {
     title,
     value,
     type,
-    category
+    category,
   });
 
   return response.json(transaction);
-  
 });
 
 transactionsRouter.delete('/:id', async (request, response) => {
@@ -47,12 +48,16 @@ transactionsRouter.delete('/:id', async (request, response) => {
   return response.status(204).send();
 });
 
-transactionsRouter.post('/import', upload.single('file'), async (request, response) => {
-  const importTransaction = new ImportTransactionsService();
-  const transactions = await importTransaction.execute(request.file.path);
+transactionsRouter.post(
+  '/import',
+  upload.single('file'),
+  async (request, response) => {
+    const importTransaction = new ImportTransactionsService();
+    console.log(request.file);
+    const transactions = await importTransaction.execute(request.file.path);
 
-  return response.json(transactions);
-  
-});
+    return response.json(transactions);
+  },
+);
 
 export default transactionsRouter;
